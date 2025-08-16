@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
- 
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -354,7 +354,7 @@
                 generateButton.querySelector('span').textContent = 'Buat Modul Ajar';
                 generateButton.classList.remove('cursor-not-allowed', 'bg-indigo-400');
                 
-                clearInterval(loadingInterval); // Selalu bersihkan interval saat state berubah
+                clearInterval(loadingInterval);
 
                 switch (state) {
                     case 'loading':
@@ -443,53 +443,27 @@
         `;
             }
 
-            async function fetchAiData(prompt, maxRetries = 5, initialDelay = 1000) {
-                const apiKey = ""; // API key will be injected by the environment
-                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-                const payload = { contents: chatHistory };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                let lastError = null;
-
-                for (let i = 0; i < maxRetries; i++) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (response.ok) {
-                            const result = await response.json();
-                            if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                                return result.candidates[0].content.parts[0].text;
-                            } else {
-                                const blockReason = result.promptFeedback?.blockReason;
-                                lastError = new Error(blockReason ? `Permintaan diblokir: ${blockReason}` : "Struktur respons API tidak valid.");
-                                if (blockReason) break; 
-                            }
-                        } else {
-                             if (response.status === 429 || response.status === 503) {
-                                lastError = new Error("overloaded");
-                             } else {
-                                const errorText = await response.text();
-                                lastError = new Error(errorText || `API request failed with status ${response.status}`);
-                             }
-                        }
-                    } catch (error) {
-                        lastError = error;
-                    }
-
-                    if (i === maxRetries - 1) break;
-                    
-                    const delay = initialDelay * Math.pow(2, i) + (Math.random() * 1000);
-                    console.log(`Attempt ${i + 1} failed. Retrying in ${Math.round(delay/1000)}s...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
+            async function fetchAiData(prompt) {
+                // GANTI DENGAN URL SUPABASE ANDA
+                const supabaseUrl = 'https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib';
                 
-                if (lastError?.message.includes("overloaded")) {
-                    throw new Error("Server AI sedang sibuk. Mohon coba lagi dalam beberapa saat.");
+                if (supabaseUrl === 'https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib') {
+                    throw new Error("URL Supabase belum dikonfigurasi di dalam kode.");
                 }
-                throw lastError || new Error("Gagal membuat modul ajar setelah beberapa kali percobaan.");
+
+                const response = await fetch(supabaseUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Terjadi kesalahan saat menghubungi server.`);
+                }
+
+                const data = await response.json();
+                return data.text;
             }
 
             copyButton.addEventListener('click', () => {
