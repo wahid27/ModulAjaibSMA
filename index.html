@@ -58,4 +58,44 @@
 
   <script>
     const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbm
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM";
+
+    async function buatModul(data) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/modul-ajaib`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(error);
+        }
+        return await response.json();
+      } catch (err) {
+        alert("Gagal membuat modul ajar: " + err.message);
+      }
+    }
+
+    async function kirimData() {
+      const teks = document.getElementById("inputModul").value;
+      if (!teks) {
+        alert("Silakan isi deskripsi modul terlebih dahulu!");
+        return;
+      }
+
+      document.getElementById("hasil").innerText = "Sedang membuat modul ajar... ⏳";
+
+      const hasil = await buatModul({ prompt: teks });
+
+      if (hasil) {
+        document.getElementById("hasil").innerText = hasil.output || JSON.stringify(hasil, null, 2);
+      }
+    }
+  </script>
+</body>
+</html>
