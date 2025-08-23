@@ -665,6 +665,30 @@
 
   test()
 </script>
+const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
+const SUPABASE_ANON_KEY = "ISI_ANON_KEY_KAMU"; 
+
+async function buatModul(data) {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/modul-ajaib`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}` // <-- WAJIB ADA
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error);
+    }
+
+    return await response.json();
+  } catch (err) {
+    alert("Gagal membuat modul ajar: " + err.message);
+  }
+}
 
     </script>
 </body>
