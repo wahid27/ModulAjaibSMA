@@ -446,9 +446,6 @@
             async function fetchAiData(prompt) {
                 // GANTI DENGAN URL SUPABASE ANDA
                 const supabaseUrl = 'https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib';
-                
-                if (supabaseUrl === 'https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib') {
-                    throw new Error("URL Supabase belum dikonfigurasi di dalam kode.");
                 }
 
                 const response = await fetch(supabaseUrl, {
