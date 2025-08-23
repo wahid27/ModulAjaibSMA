@@ -446,9 +446,7 @@
             async function fetchAiData(prompt) {
                 // GANTI DENGAN URL SUPABASE ANDA
                 const supabaseUrl = 'https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib';
-                }
-
-                const response = await fetch(supabaseUrl, {
+                 const response = await fetch(supabaseUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: prompt })
