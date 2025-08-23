@@ -655,6 +655,22 @@
             passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyPassword(); });
             securityModalOverlay.addEventListener('click', (e) => { if (e.target === securityModalOverlay) hideSecurityModal(); });
         });
+        <script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+  const supabaseUrl = "https://yrylcppwnhinephqoazl.supabase.co"   // ganti dengan URL kamu
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM"          // ganti dengan Anon Key kamu
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
+  // contoh cek koneksi
+  async function test() {
+    const { data, error } = await supabase.from('namatabel').select('*')
+    console.log(data, error)
+  }
+
+  test()
+</script>
+
     </script>
 </body>
 
