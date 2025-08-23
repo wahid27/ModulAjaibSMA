@@ -7,93 +7,131 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
-      text-align: center;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
     }
     h1 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      text-align: center;
       color: #333;
     }
-    textarea {
-      width: 80%;
-      height: 120px;
-      margin: 15px 0;
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+    select, textarea, button {
+      width: 100%;
       padding: 10px;
-      border-radius: 8px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
+      border-radius: 8px;
       font-size: 14px;
     }
     button {
-      background: #4CAF50;
+      background-color: #4CAF50;
       color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
+      border: none;
+      transition: 0.3s;
     }
     button:hover {
-      background: #45a049;
+      background-color: #45a049;
     }
-    #hasil {
+    .output {
       margin-top: 20px;
       padding: 15px;
-      background: white;
       border-radius: 8px;
-      text-align: left;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
       white-space: pre-wrap;
-      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-  <h1>Modul Ajar Generator</h1>
+  <div class="container">
+    <h1>Generator Modul Ajar</h1>
+    
+    <label for="jenjang">Pilih Jenjang:</label>
+    <select id="jenjang">
+      <option value="SD/MI">SD/MI</option>
+      <option value="SMP/MTs">SMP/MTs</option>
+      <option value="SMA/MA">SMA/MA</option>
+    </select>
 
-  <p>Masukkan deskripsi modul ajar:</p>
-  <textarea id="inputModul" placeholder="Tulis deskripsi modul ajar di sini..."></textarea>
-  <br>
-  <button onclick="kirimData()">Buat Modul</button>
+    <label for="mapel">Pilih Mata Pelajaran:</label>
+    <select id="mapel">
+      <option value="Matematika">Matematika</option>
+      <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+      <option value="Bahasa Inggris">Bahasa Inggris</option>
+      <option value="IPA">IPA</option>
+      <option value="IPS">IPS</option>
+    </select>
 
-  <div id="hasil"></div>
+    <label for="deskripsi">Deskripsi Tambahan:</label>
+    <textarea id="deskripsi" rows="4" placeholder="Contoh: Materi Sistem Pencernaan, kelas 8..."></textarea>
+
+    <button onclick="generateModul()">Buat Modul Ajar</button>
+
+    <div id="output" class="output"></div>
+  </div>
 
   <script>
-    const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM";
+    async function fetchAiData(prompt) {
+      const supabaseUrl = "https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib";
+      const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM";
 
-    async function buatModul(data) {
-      try {
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/modul-ajaib`, {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify(data)
-        });
+      const response = await fetch(supabaseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({ prompt })
+      });
 
-        if (!response.ok) {
-          const error = await response.text();
-          throw new Error(error);
-        }
-        return await response.json();
-      } catch (err) {
-        alert("Gagal membuat modul ajar: " + err.message);
+      if (!response.ok) {
+        let errorMsg = "Terjadi kesalahan saat menghubungi server.";
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch(e) {}
+        throw new Error(errorMsg);
       }
+
+      const data = await response.json();
+      return data.text || JSON.stringify(data);
     }
 
-    async function kirimData() {
-      const teks = document.getElementById("inputModul").value;
-      if (!teks) {
-        alert("Silakan isi deskripsi modul terlebih dahulu!");
-        return;
-      }
+    async function generateModul() {
+      const jenjang = document.getElementById("jenjang").value;
+      const mapel = document.getElementById("mapel").value;
+      const deskripsi = document.getElementById("deskripsi").value;
 
-      document.getElementById("hasil").innerText = "Sedang membuat modul ajar... ⏳";
+      const prompt = `Buatkan modul ajar untuk jenjang ${jenjang}, mata pelajaran ${mapel}, dengan deskripsi: ${deskripsi}`;
 
-      const hasil = await buatModul({ prompt: teks });
+      const outputDiv = document.getElementById("output");
+      outputDiv.textContent = "Sedang membuat modul ajar...";
 
-      if (hasil) {
-        document.getElementById("hasil").innerText = hasil.output || JSON.stringify(hasil, null, 2);
+      try {
+        const hasil = await fetchAiData(prompt);
+        outputDiv.textContent = hasil;
+      } catch (error) {
+        outputDiv.textContent = "Gagal membuat modul ajar: " + error.message;
       }
     }
   </script>
