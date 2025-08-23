@@ -1,696 +1,78 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asisten Modul Ajar Anti-Pusing - SMA/MA</title>
-    
-    <!-- Library Eksternal -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
-
-    <style>
-        /* style.css */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-
-        .custom-loader {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background:
-                radial-gradient(farthest-side, #4f46e5 94%, #0000) top/8px 8px no-repeat,
-                conic-gradient(#0000 30%, #4f46e5);
-            -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
-            animation: s3 1s infinite linear;
-        }
-
-        @keyframes s3 {
-            100% {
-                transform: rotate(1turn)
-            }
-        }
-
-        .spinner-sm {
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid currentColor;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: s3 0.8s linear infinite;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        .prose h1,
-        .prose h2,
-        .prose h3 {
-            font-weight: 700;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
-        }
-
-        .prose p {
-            margin-bottom: 1em;
-            line-height: 1.6;
-        }
-
-        .prose ul,
-        .prose ol {
-            margin-left: 1.5em;
-            margin-bottom: 1em;
-        }
-
-        .prose li {
-            margin-bottom: 0.5em;
-        }
-
-        .prose strong {
-            font-weight: 600;
-        }
-
-        .prose table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1em;
-        }
-
-        .prose th,
-        .prose td {
-            border: 1px solid #e2e8f0;
-            padding: 0.5rem 0.75rem;
-        }
-
-        .prose thead {
-            background-color: #f1f5f9;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modul Ajar Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    textarea, input, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+    }
+    #output {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f9f9f9;
+    }
+  </style>
 </head>
+<body>
+  <h1>📘 Modul Ajar Generator</h1>
 
-<body class="text-gray-800">
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+  <label for="prompt">Masukkan instruksi modul ajar:</label>
+  <textarea id="prompt" rows="5" placeholder="contoh: Buatkan modul ajar Bahasa Inggris kelas 9 tentang Advertisement..."></textarea>
 
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-indigo-600">Sulap Modul Ajar Keren SMA/MA ✨</h1>
-            <p class="text-gray-500 mt-2">Biar kami yang pusing mikirin administrasi, Bapak/Ibu guru fokus mengajar saja.</p>
-        </header>
+  <button onclick="generateModul()">Buat Modul Ajar</button>
 
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <div id="output"></div>
 
-            <!-- Input Form Column -->
-            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-                <h2 class="text-2xl font-bold mb-6 text-gray-700">Racik Modul Ajar di Sini 👇</h2>
-                <form id="teachingModuleForm" class="space-y-6">
-                    
-                    <div>
-                        <label for="sekolah" class="block text-sm font-medium text-gray-600 mb-1">Mengajar di Mana, nih?</label>
-                        <select id="sekolah" name="sekolah" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                            <option value="">-- SMA atau MA? --</option>
-                            <option value="SMA">SMA</option>
-                            <option value="MA">MA</option>
-                        </select>
-                    </div>
+  <script>
+    async function fetchAiData(prompt) {
+      const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM"; // GANTI dengan anon key asli
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="kelas" class="block text-sm font-medium text-gray-600 mb-1">Untuk Kelas?</label>
-                            <select id="kelas" name="kelas" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                                <option value="">-- Pilih --</option>
-                                <option value="X">Kelas X</option>
-                                <option value="XI">Kelas XI</option>
-                                <option value="XII">Kelas XII</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="semester" class="block text-sm font-medium text-gray-600 mb-1">Semester Berapa?</label>
-                            <select id="semester" name="semester" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                                <option value="">-- Pilih --</option>
-                                <option value="Ganjil">Ganjil</option>
-                                <option value="Genap">Genap</option>
-                            </select>
-                        </div>
-                    </div>
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/modul-ajaib`, {
+          method: 'POST',
+          headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}` 
+          },
+          body: JSON.stringify({ prompt: prompt })
+      });
 
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-gray-600 mb-1">Mapel Andalannya Apa?</label>
-                        <select id="subject" name="subject" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                            <option value="">Pilih jenjang dulu, ya</option>
-                        </select>
-                    </div>
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Terjadi kesalahan saat menghubungi server.`);
+      }
 
-                    <div>
-                        <label for="topic" class="block text-sm font-medium text-gray-600 mb-1">Materi Pokoknya Tentang Apa?</label>
-                        <input type="text" id="topic" name="topic" placeholder="Ketik materinya di sini, cth: Teks Prosedur" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    </div>
-
-                    <div>
-                        <label for="duration" class="block text-sm font-medium text-gray-600 mb-1">Butuh Berapa Jam Pelajaran?</label>
-                        <input type="number" id="duration" name="duration" placeholder="Cth: 2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    </div>
-
-                    <button type="submit" id="generateButton" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition-transform transform hover:scale-105 flex items-center justify-center">
-                        <i class="fas fa-magic-wand-sparkles mr-2"></i>
-                        <span>Sulap Jadi Modul Ajaib!</span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Output Column -->
-            <div class="lg:col-span-2">
-                <div id="outputContainer" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-200 min-h-[500px] flex flex-col">
-                    <!-- Placeholder/Initial State -->
-                    <div id="placeholder" class="text-center text-gray-400 flex-grow flex flex-col justify-center items-center">
-                        <i class="fas fa-hat-wizard fa-4x mb-4 text-gray-300"></i>
-                        <h3 class="text-xl font-semibold">Area Sulap Modul Ajar</h3>
-                        <p class="mt-2 max-w-md">Setelah resep di samping diisi, modul ajar keren akan muncul di sini. Sim salabim!</p>
-                    </div>
-
-                    <!-- Loading State -->
-                    <div id="loading" class="hidden text-center text-gray-500 flex-grow flex flex-col justify-center items-center">
-                        <div class="custom-loader mb-4"></div>
-                        <p id="loadingMessage" class="text-lg font-semibold animate-pulse">Sedang meracik keajaiban...</p>
-                    </div>
-
-                    <!-- Result State -->
-                    <div id="result" class="hidden">
-                         <div class="flex flex-wrap justify-between items-center mb-6 border-b pb-4 gap-4">
-                            <h2 class="text-2xl font-bold text-gray-800">Tadaa! Modul Ajar Siap Beraksi</h2>
-                         </div>
-                        <div id="moduleContent" class="prose max-w-none">
-                            <!-- Content will be injected here -->
-                        </div>
-                        <div class="flex flex-wrap justify-center items-center mt-8 border-t pt-6 gap-4">
-                            <button id="copyButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">
-                                <i class="fas fa-copy mr-2"></i>Salin Teks
-                            </button>
-                            <button id="downloadButton" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">
-                                <i class="fas fa-download mr-2"></i>Unduh File
-                            </button>
-                        </div>
-                    </div>
-                     <!-- Error State -->
-                    <div id="error" class="hidden text-center text-red-500 flex-grow flex flex-col justify-center items-center">
-                        <i class="fas fa-exclamation-triangle fa-4x mb-4"></i>
-                        <h3 class="text-xl font-semibold">Waduh, Ada Sedikit Gangguan</h3>
-                        <p id="errorMessage" class="mt-2 max-w-md"></p>
-                    </div>
-                </div>
-                 <!-- Toast Notification -->
-                <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white py-2 px-5 rounded-lg shadow-xl transition-opacity duration-300 opacity-0">
-                    Teks berhasil disalin ke clipboard!
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <script type="module">
-        // app.js
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('teachingModuleForm');
-            const generateButton = document.getElementById('generateButton');
-            const placeholder = document.getElementById('placeholder');
-            const loading = document.getElementById('loading');
-            const resultContainer = document.getElementById('result');
-            const errorContainer = document.getElementById('error');
-            const errorMessage = document.getElementById('errorMessage');
-            const moduleContent = document.getElementById('moduleContent');
-            const copyButton = document.getElementById('copyButton');
-            const downloadButton = document.getElementById('downloadButton');
-            const toast = document.getElementById('toast');
-            
-            const sekolahSelect = document.getElementById('sekolah');
-            const kelasSelect = document.getElementById('kelas');
-            const semesterSelect = document.getElementById('semester');
-            const subjectSelect = document.getElementById('subject');
-            const topicInput = document.getElementById('topic');
-
-            let loadingInterval = null;
-            const loadingMessages = [
-                "Sabar, ya... Asisten AI lagi minum kopi sambil meracik keajaiban.",
-                "Tenang, servernya lagi nggak ngambek kok. Cuma butuh mikir bentar.",
-                "Sedang mengumpulkan ide-ide cemerlang dari seluruh alam semesta...",
-                "Psstt... AI lagi konsultasi sama para ahli Kurikulum Merdeka.",
-                "Menyusun kata-kata sakti... Biar modulnya nggak bikin ngantuk.",
-                "Mencari inspirasi di ruang guru digital... Sebentar lagi selesai!"
-            ];
-
-            const showdownConverter = new showdown.Converter({
-                tables: true,
-                strikethrough: true,
-                tasklists: true,
-                simpleLineBreaks: true
-            });
-
-            const subjectData = {
-                "SMA": ["Pendidikan Agama dan Budi Pekerti", "Pendidikan Pancasila", "Bahasa Indonesia", "Bahasa Inggris", "Matematika", "Sejarah", "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)", "Seni dan Budaya", "Biologi", "Kimia", "Fisika", "Informatika", "Matematika Tingkat Lanjut", "Sosiologi", "Ekonomi", "Geografi", "Antropologi", "Bahasa Indonesia Tingkat Lanjut", "Bahasa Inggris Tingkat Lanjut", "Bahasa Arab", "Bahasa Korea", "Bahasa Mandarin", "Bahasa Jepang", "Bahasa Jerman", "Bahasa Prancis", "Prakarya & Kewirausahaan"],
-                "MA": ["Al-Qur’an Hadis", "Akidah Akhlak", "Fikih", "Sejarah Kebudayaan Islam", "Bahasa Arab", "Bahasa Indonesia", "Bahasa Inggris", "Pendidikan Pancasila", "Sejarah", "Pendidikan Jasmani, Olahraga, dan Kesehatan (PJOK)", "Fisika", "Kimia", "Biologi", "Sosiologi", "Ekonomi", "Geografi", "Informatika", "Seni Budaya", "Prakarya", "Ilmu Tafsir", "Ilmu Hadis", "Ushul Fikih", "Antropologi", "Bahasa Arab Tingkat Lanjut", "Bahasa Indonesia Tingkat Lanjut", "Bahasa Inggris Tingkat Lanjut", "Bahasa Jepang", "Bahasa Jerman", "Bahasa Korea", "Bahasa Mandarin", "Bahasa Prancis", "Biologi (Lanjutan)", "Ekonomi (Lanjutan)", "Fisika (Lanjutan)", "Geografi (Lanjutan)", "Kimia (Lanjutan)", "Matematika Tingkat Lanjut", "Sejarah Tingkat Lanjut", "Sosiologi (Lanjutan)", "Prakarya & Kewirausahaan"]
-            };
-
-            function updateSubjectDropdown() {
-                const selectedSekolah = sekolahSelect.value;
-                subjectSelect.innerHTML = ''; // Selalu kosongkan dulu
-
-                if (selectedSekolah && subjectData[selectedSekolah]) {
-                    subjectSelect.disabled = false;
-                    
-                    const placeholderOption = document.createElement('option');
-                    placeholderOption.value = "";
-                    placeholderOption.textContent = "-- Pilih Mata Pelajaran --";
-                    subjectSelect.appendChild(placeholderOption);
-
-                    subjectData[selectedSekolah].sort().forEach(subject => {
-                        const option = document.createElement('option');
-                        option.value = subject;
-                        option.textContent = subject;
-                        subjectSelect.appendChild(option);
-                    });
-                } else {
-                    const placeholderOption = document.createElement('option');
-                    placeholderOption.value = "";
-                    placeholderOption.textContent = "Pilih jenjang dulu, ya";
-                    subjectSelect.appendChild(placeholderOption);
-                    subjectSelect.disabled = true;
-                }
-            }
-
-            sekolahSelect.addEventListener('change', updateSubjectDropdown);
-            updateSubjectDropdown();
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await handleGenerate();
-            });
-
-            async function handleGenerate() {
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-
-                if (!data.sekolah || !data.kelas || !data.semester || !data.subject || !data.topic || !data.duration) {
-                    showError("Harap isi semua kolom yang tersedia.");
-                    return;
-                }
-
-                setUIState('loading');
-
-                try {
-                    const prompt = createPrompt(data);
-                    const aiResponse = await fetchAiData(prompt);
-                    const htmlContent = showdownConverter.makeHtml(aiResponse);
-
-                    moduleContent.innerHTML = htmlContent;
-                    setUIState('result');
-
-                } catch (error) {
-                    console.error("Gagal membuat modul ajar:", error);
-                    showError(`Gagal membuat modul ajar: ${error.message}`);
-                }
-            }
-
-            function setUIState(state) {
-                placeholder.classList.add('hidden');
-                loading.classList.add('hidden');
-                resultContainer.classList.add('hidden');
-                errorContainer.classList.add('hidden');
-                generateButton.disabled = false;
-                generateButton.querySelector('span').textContent = 'Buat Modul Ajar';
-                generateButton.classList.remove('cursor-not-allowed', 'bg-indigo-400');
-                
-                clearInterval(loadingInterval);
-
-                switch (state) {
-                    case 'loading':
-                        loading.classList.remove('hidden');
-                        generateButton.disabled = true;
-                        generateButton.querySelector('span').textContent = 'Memproses...';
-                        generateButton.classList.add('cursor-not-allowed', 'bg-indigo-400');
-                        
-                        const loadingMessageElement = document.getElementById('loadingMessage');
-                        loadingMessageElement.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
-                        
-                        loadingInterval = setInterval(() => {
-                            const randomIndex = Math.floor(Math.random() * loadingMessages.length);
-                            loadingMessageElement.textContent = loadingMessages[randomIndex];
-                        }, 3500);
-                        break;
-                    case 'result':
-                        resultContainer.classList.remove('hidden');
-                        resultContainer.classList.add('fade-in');
-                        break;
-                    case 'error':
-                        errorContainer.classList.remove('hidden');
-                        errorContainer.classList.add('fade-in');
-                        break;
-                    case 'initial':
-                    default:
-                        placeholder.classList.remove('hidden');
-                        break;
-                }
-            }
-
-            function showError(message) {
-                errorMessage.textContent = message;
-                setUIState('error');
-            }
-
-            function createPrompt(data) {
-                const fase = data.kelas === 'X' ? 'E' : 'F';
-                return `
-        Buatkan saya sebuah Modul Ajar yang lengkap, detail, dan terstruktur untuk Kurikulum Merdeka dengan format Markdown. Pastikan untuk mengintegrasikan prinsip **pembelajaran berdiferensiasi** dan **pembelajaran mendalam (deep learning)** di seluruh komponen, terutama pada kegiatan pembelajaran dan asesmen.
-
-        **Detail Pembelajaran:**
-        - **Jenjang:** ${data.sekolah} (Fase ${fase})
-        - **Kelas:** ${data.kelas}
-        - **Semester:** ${data.semester}
-        - **Mata Pelajaran:** ${data.subject}
-        - **Topik / Bab:** ${data.topic}
-        - **Alokasi Waktu:** ${data.duration} Jam Pelajaran
-
-        **Struktur Modul Ajar yang Diinginkan:**
-
-        ### MODUL AJAR: ${data.subject}
-
-        **A. INFORMASI UMUM**
-           1.  **Identitas Sekolah:** [Nama Sekolah]
-           2.  **Kompetensi Awal:** [Jelaskan pengetahuan atau keterampilan prasyarat yang relevan dengan topik]
-           3.  **Profil Pelajar Pancasila:** [Sebutkan dimensi yang paling relevan dan jelaskan bagaimana dimensi itu diterapkan dalam pembelajaran]
-           4.  **Sarana dan Prasarana:** [Sebutkan media, alat, dan bahan yang dibutuhkan]
-           5.  **Target Peserta Didik:** [Contoh: Peserta didik reguler/tipikal]
-           6.  **Model Pembelajaran:** [Pilih model yang relevan, contoh: Problem-Based Learning, Project-Based Learning]
-
-        **B. KOMPONEN INTI**
-           1.  **Capaian Pembelajaran (CP):** [Tuliskan CP dari Kurikulum Merdeka yang sesuai dengan Fase ${fase}, mata pelajaran ${data.subject}]
-           2.  **Tujuan Pembelajaran (TP):** [Rumuskan beberapa TP yang spesifik, terukur, dan dapat dicapai yang diturunkan dari CP dan relevan dengan topik "${data.topic}"]
-           3.  **Pemahaman Bermakna:** [Jelaskan koneksi antara konsep yang dipelajari dengan kehidupan nyata siswa]
-           4.  **Pertanyaan Pemantik:** [Buat 2-3 pertanyaan HOTS yang memprovokasi pemikiran kritis dan rasa ingin tahu]
-           5.  **Kegiatan Pembelajaran:**
-               * **Pendahuluan:** [Rincian langkah-langkah: salam, doa, apersepsi menarik, penyampaian tujuan dan asesmen]
-               * **Kegiatan Inti:** [Rincian langkah-langkah detail sesuai sintaks model pembelajaran. **Wajib sertakan ide diferensiasi (konten, proses, atau produk)** untuk mendukung siswa dengan beragam kebutuhan belajar]
-               * **Penutup:** [Rincian langkah-langkah: kesimpulan bersama siswa, refleksi mendalam (apa yang dipelajari, apa yang sulit, bagaimana mengatasinya), umpan balik, dan info materi selanjutnya]
-           6.  **Asesmen:**
-               * **Asesmen Diagnostik:** [Jelaskan asesmen non-kognitif (gaya belajar, minat) dan kognitif (pengetahuan awal)]
-               * **Asesmen Formatif:** [Jelaskan teknik asesmen selama proses pembelajaran, seperti observasi, diskusi, atau kuis singkat]
-               * **Asesmen Sumatif:** [Jelaskan instrumen asesmen di akhir pembelajaran, lengkap dengan rubrik penilaian jika memungkinkan]
-           7.  **Pengayaan dan Remedial:**
-               * **Pengayaan:** [Berikan kegiatan yang menantang untuk siswa yang sudah mencapai TP]
-               * **Remedial:** [Berikan kegiatan bimbingan atau pembelajaran ulang untuk siswa yang belum mencapai TP]
-
-        **C. LAMPIRAN**
-           1.  **Lembar Kerja Peserta Didik (LKPD):** [Buat contoh LKPD yang jelas dan mendukung tujuan pembelajaran]
-           2.  **Bahan Bacaan Guru dan Peserta Didik:** [Sebutkan sumber belajar yang relevan dan bervariasi]
-           3.  **Glosarium:** [Daftar istilah penting dan penjelasannya]
-           4.  **Daftar Pustaka:** [Sumber referensi yang digunakan]
-
-        Tolong hasilkan output yang rapi, profesional, dan sesuai dengan struktur di atas.
-        `;
-            }
-
-            async function fetchAiData(prompt) {
-                // GANTI DENGAN URL SUPABASE ANDA
-                const supabaseUrl = 'https://yrylcppwnhinephqoazl.supabase.co/functions/v1/modul-ajaib';
-                 const response = await fetch(supabaseUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Terjadi kesalahan saat menghubungi server.`);
-                }
-
-                const data = await response.json();
-                return data.text;
-            }
-
-            copyButton.addEventListener('click', () => {
-                const contentToCopy = moduleContent.innerText;
-                const textArea = document.createElement('textarea');
-                textArea.value = contentToCopy;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast('Teks berhasil disalin!');
-                } catch (err) {
-                    showToast('Gagal menyalin teks.');
-                    console.error('Gagal menyalin:', err);
-                }
-                document.body.removeChild(textArea);
-            });
-            
-            downloadButton.addEventListener('click', () => {
-                const htmlContent = moduleContent.innerHTML;
-                const title = document.querySelector('#topic').value || 'Modul Ajar';
-                const blob = new Blob([`
-                    <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>${title}</title>
-                    <style>body{font-family:sans-serif;line-height:1.6;padding:20px}h1,h2,h3{color:#333}table{border-collapse:collapse;width:100%;margin-bottom:1em}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background-color:#f2f2f2}ul,ol{padding-left:20px}</style>
-                    </head><body>${htmlContent}</body></html>`], { type: 'text/html' });
-
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `${title.replace(/\s/g, '_')}.html`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-
-            function showToast(message) {
-                toast.textContent = message;
-                toast.classList.remove('opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('opacity-0');
-                }, 3000);
-            }
-        });
-    </script>
-    <script defer>
-        // security.js
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- KONFIGURASI ---
-            const validPasswords = ['admin123', 'guruhebat', 'merdeka24', 'guruSantuy', 'PakGuruNgopi', 'BuGuruCeria', 'SpidolSakti', 'KapurAjaib', 'NilaiAplus', 'CatatanGuru', 'AbsenDulu', 'BelSekolah', 'TugasMepet', 'RaporBahagia', 'WaliKelasGaul', 'KisiKisiJagoan', 'RemedialAsik', 'TidakPlagiat', 'Hadir100%', 'KelasRiang', 'GuruSantuyTegas', 'ZoomMatiMic'];
-
-            // --- Cek apakah pengguna sudah terverifikasi ---
-            if (localStorage.getItem('isVerified') === 'true') {
-                return; // Jika sudah, jangan jalankan sisa skrip keamanan
-            }
-
-            // --- PEMBUATAN ELEMEN MODAL ---
-            const modalHTML = `
-                <div id="securityModalOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex justify-center items-center z-50 hidden opacity-0 transition-opacity duration-300">
-                    <div id="securityModal" class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-transform duration-300 scale-95">
-                        <h3 class="text-2xl font-bold text-gray-800 text-center mb-4">Akses Orang Dalam</h3>
-                        <p class="text-center text-gray-500 mb-6">Ketik kata sandi, semoga jari-jarimu nggak salah langkah.</p>
-                        <div class="space-y-4">
-                            <div>
-                                <label for="passwordInput" class="block text-sm font-medium text-gray-600">Kata Sandi</label>
-                                <input type="password" id="passwordInput" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="••••••••">
-                            </div>
-                            <p id="passwordError" class="text-red-500 text-sm text-center h-4"></p>
-                            <div class="text-center text-sm text-gray-500 pt-2">
-                                Belum punya kode? 
-                                <a href="https://wa.me/6285159599193" target="_blank" class="font-semibold text-indigo-600 hover:text-indigo-500 inline-flex items-center">
-                                    <i class="fab fa-whatsapp mr-1"></i> Chat Mas Admin
-                                </a>
-                            </div>
-                            <button id="submitPasswordBtn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition-transform transform hover:scale-105">
-                                Verifikasi
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-            const securityModalOverlay = document.getElementById('securityModalOverlay');
-            const securityModal = document.getElementById('securityModal');
-            const passwordInput = document.getElementById('passwordInput');
-            const submitPasswordBtn = document.getElementById('submitPasswordBtn');
-            const passwordError = document.getElementById('passwordError');
-
-            let pendingAction = null;
-
-            function showSecurityModal(actionCallback) {
-                pendingAction = actionCallback;
-                passwordInput.value = '';
-                passwordError.textContent = '';
-                securityModalOverlay.classList.remove('hidden');
-                setTimeout(() => {
-                    securityModalOverlay.classList.remove('opacity-0');
-                    securityModal.classList.remove('scale-95');
-                    passwordInput.focus();
-                }, 10);
-            }
-
-            function hideSecurityModal() {
-                securityModalOverlay.classList.add('opacity-0');
-                securityModal.classList.add('scale-95');
-                setTimeout(() => {
-                    securityModalOverlay.classList.add('hidden');
-                    pendingAction = null;
-                }, 300);
-            }
-
-            function verifyPassword() {
-                if (validPasswords.includes(passwordInput.value)) {
-                    localStorage.setItem('isVerified', 'true'); // Simpan status verifikasi
-                    if (typeof pendingAction === 'function') {
-                        pendingAction();
-                    }
-                    hideSecurityModal();
-                } else {
-                    passwordError.textContent = 'Kata sandi salah. Silakan coba lagi.';
-                    securityModal.classList.add('animate-shake');
-                    setTimeout(() => securityModal.classList.remove('animate-shake'), 500);
-                }
-            }
-            
-            const style = document.createElement('style');
-            style.innerHTML = `@keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } } .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }`;
-            document.head.appendChild(style);
-
-            function attachSecurityHandlers() {
-                const copyButton = document.getElementById('copyButton');
-                const downloadButton = document.getElementById('downloadButton');
-
-                if (copyButton && downloadButton) {
-                    copyButton.addEventListener('click', (e) => {
-                        e.stopImmediatePropagation();
-                        showSecurityModal(() => {
-                            const moduleContent = document.getElementById('moduleContent');
-                            const toast = document.getElementById('toast');
-                            const contentToCopy = moduleContent.innerText;
-                            const textArea = document.createElement('textarea');
-                            textArea.value = contentToCopy;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            try {
-                                document.execCommand('copy');
-                                toast.textContent = 'Teks berhasil disalin!';
-                                toast.classList.remove('opacity-0');
-                                setTimeout(() => toast.classList.add('opacity-0'), 3000);
-                            } catch (err) { console.error('Gagal menyalin:', err); }
-                            document.body.removeChild(textArea);
-                        });
-                    }, true);
-
-                    downloadButton.addEventListener('click', (e) => {
-                        e.stopImmediatePropagation();
-                        showSecurityModal(() => {
-                            const moduleContent = document.getElementById('moduleContent');
-                            const topicInput = document.getElementById('topic');
-                            const htmlContent = moduleContent.innerHTML;
-                            const title = topicInput.value || 'Modul Ajar';
-                            const blob = new Blob([`
-                                <!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>${title}</title>
-                                <style>body{font-family:sans-serif;line-height:1.6;padding:20px}h1,h2,h3{color:#333}table{border-collapse:collapse;width:100%;margin-bottom:1em}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background-color:#f2f2f2}ul,ol{padding-left:20px}</style>
-                                </head><body>${htmlContent}</body></html>`], { type: 'text/html' });
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = `${title.replace(/\s/g, '_')}.html`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        });
-                    }, true);
-                }
-            }
-
-            const observer = new MutationObserver((mutations, obs) => {
-                if (document.getElementById('copyButton')) {
-                    attachSecurityHandlers();
-                    obs.disconnect();
-                }
-            });
-
-            const outputContainer = document.getElementById('outputContainer');
-            if (outputContainer) {
-                observer.observe(outputContainer, { childList: true, subtree: true });
-            }
-
-            submitPasswordBtn.addEventListener('click', verifyPassword);
-            passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyPassword(); });
-            securityModalOverlay.addEventListener('click', (e) => { if (e.target === securityModalOverlay) hideSecurityModal(); });
-        });
-        <script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js'
-
-  const supabaseUrl = "https://yrylcppwnhinephqoazl.supabase.co"   // ganti dengan URL kamu
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM"          // ganti dengan Anon Key kamu
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  // contoh cek koneksi
-  async function test() {
-    const { data, error } = await supabase.from('namatabel').select('*')
-    console.log(data, error)
-  }
-
-  test()
-</script>
-const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM"; 
-
-async function buatModul(data) {
-  try {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/modul-ajaib`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}` // <-- WAJIB ADA
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error);
+      const data = await response.json();
+      return data.text;
     }
 
-    return await response.json();
-  } catch (err) {
-    alert("Gagal membuat modul ajar: " + err.message);
-  }
-}
+    async function generateModul() {
+      const prompt = document.getElementById("prompt").value;
+      const outputDiv = document.getElementById("output");
+      outputDiv.innerHTML = "⏳ Sedang membuat modul ajar...";
 
-    </script>
+      try {
+        const result = await fetchAiData(prompt);
+        outputDiv.innerHTML = result;
+      } catch (error) {
+        outputDiv.innerHTML = "❌ Gagal membuat modul ajar: " + error.message;
+      }
+    }
+  </script>
 </body>
-
 </html>
