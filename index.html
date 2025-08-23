@@ -7,72 +7,55 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: auto;
+      background: #f5f5f5;
       padding: 20px;
-    }
-    h1 {
       text-align: center;
     }
-    textarea, input, button {
-      width: 100%;
-      margin: 10px 0;
-      padding: 10px;
+    h1 {
+      color: #333;
     }
-    #output {
-      border: 1px solid #ddd;
-      padding: 15px;
+    textarea {
+      width: 80%;
+      height: 120px;
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #hasil {
       margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      text-align: left;
       white-space: pre-wrap;
-      background: #f9f9f9;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-  <h1>📘 Modul Ajar Generator</h1>
+  <h1>Modul Ajar Generator</h1>
 
-  <label for="prompt">Masukkan instruksi modul ajar:</label>
-  <textarea id="prompt" rows="5" placeholder="contoh: Buatkan modul ajar Bahasa Inggris kelas 9 tentang Advertisement..."></textarea>
+  <p>Masukkan deskripsi modul ajar:</p>
+  <textarea id="inputModul" placeholder="Tulis deskripsi modul ajar di sini..."></textarea>
+  <br>
+  <button onclick="kirimData()">Buat Modul</button>
 
-  <button onclick="generateModul()">Buat Modul Ajar</button>
-
-  <div id="output"></div>
+  <div id="hasil"></div>
 
   <script>
-    async function fetchAiData(prompt) {
-      const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbmVwaHFvYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMzI0NzYsImV4cCI6MjA3MDkwODQ3Nn0.jnMht77-TS22lPnAhf4m3S72udnEOBRt4kT-eEmG2gM"; // GANTI dengan anon key asli
-
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/modul-ajaib`, {
-          method: 'POST',
-          headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}` 
-          },
-          body: JSON.stringify({ prompt: prompt })
-      });
-
-      if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Terjadi kesalahan saat menghubungi server.`);
-      }
-
-      const data = await response.json();
-      return data.text;
-    }
-
-    async function generateModul() {
-      const prompt = document.getElementById("prompt").value;
-      const outputDiv = document.getElementById("output");
-      outputDiv.innerHTML = "⏳ Sedang membuat modul ajar...";
-
-      try {
-        const result = await fetchAiData(prompt);
-        outputDiv.innerHTML = result;
-      } catch (error) {
-        outputDiv.innerHTML = "❌ Gagal membuat modul ajar: " + error.message;
-      }
-    }
-  </script>
-</body>
-</html>
+    const SUPABASE_URL = "https://yrylcppwnhinephqoazl.supabase.co"; 
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeWxjcHB3bmhpbm
